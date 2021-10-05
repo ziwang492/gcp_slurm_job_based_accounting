@@ -2,7 +2,7 @@
 
 resource "google_project_service" "gcp_services" {
   count   = length(var.gcp_service_list)
-  # project = var.project
+  project = var.project
   service = var.gcp_service_list[count.index]
   timeouts {
     create = "30m"
