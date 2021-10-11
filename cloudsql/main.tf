@@ -21,8 +21,6 @@ resource "google_sql_database_instance" "instance" {
     }
   }
 }
-
-
 resource "google_sql_database" "database" {
   name     = "slurm_accounting"
   instance = google_sql_database_instance.instance.name

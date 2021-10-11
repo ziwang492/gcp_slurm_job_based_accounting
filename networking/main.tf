@@ -9,7 +9,7 @@ variable "zone" {
 
 variable "region" {
   type    = string
-  default = "us-central-1"
+  default = "us-central1"
 }
 
 variable "network" {

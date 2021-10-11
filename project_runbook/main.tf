@@ -1,16 +1,21 @@
+provider "google" {
+  project     = "sample1-328718"
+  region      = "us-central1"
+}
+
 variable "project" {
   type    = string
-  default = "positive-rush-328123"
+  default = "sample1-328718"
 }
 
 variable "zone" {
   type    = string
-  default = "us-central-1a"
+  default = "us-central1-a"
 }
 
 variable "region" {
   type    = string
-  default = "us-central-1"
+  default = "us-central1"
 }
 
 variable "sql_instance_name" {
@@ -84,13 +89,13 @@ module "service-enablement"  {
   gcp_service_list= var.gcp_service_list
 }
 
-# module "networking" {
-#   source          = "../networking"
-#   project         = var.project
-#   depends_on = [
-#     module.service-enablement
-#   ]
-# }
+module "networking" {
+  source          = "../networking"
+  project         = var.project
+  depends_on = [
+    module.service-enablement
+  ]
+}
 
 module "filestore-server" {
   source    = "../terraform/storage"
@@ -99,7 +104,6 @@ module "filestore-server" {
   network   = var.network
   depends_on = [
     module.service-enablement,
-    # module.landingzone
   ]
 }
 
@@ -110,70 +114,69 @@ module "cloudsql" {
   region            = var.region
   tier              = var.tier
   network           = var.network
-  nat_ips           = ["184.94.46.66"]
+  nat_ips           = module.networking.nat_ips
   deletion_protection = false
   
 
   depends_on = [
     module.service-enablement,
-    # module.networking
-  ]
-    
+    module.networking
+  ]   
 }
 
-# module "slurm-cluster" {
-#   source    = "../terraform/slurm-cluster"
-#   project   = var.project
-#   zone      = var.zone
-#   cluster_name = "edafarm"
+module "slurm-cluster" {
+  source    = "../terraform/slurm-cluster"
+  project   = var.project
+  zone      = var.zone
+  cluster_name = "edafarm"
 
-#   network_name            = var.network
-#   subnetwork_name         = var.sub_network
-#   slurm_version           = var.slurm_version
-#   controller_scopes          = ["https://www.googleapis.com/auth/cloud-platform"]
-#   login_node_scopes          = ["https://www.googleapis.com/auth/cloud-platform"]
+  network_name            = var.network
+  subnetwork_name         = var.sub_network
+  slurm_version           = var.slurm_version
+  controller_scopes          = ["https://www.googleapis.com/auth/cloud-platform"]
+  login_node_scopes          = ["https://www.googleapis.com/auth/cloud-platform"]
 
-#   cloudsql = {
-#     server_ip = module.cloudsql.sql_ip
-#     user      = "slurm"
-#     password  = "verysecure"
-#     db_name   = "slurm_accounting"
-#   }
+  cloudsql = {
+    server_ip = module.cloudsql.sql_ip
+    user      = "slurm"
+    password  = "verysecure"
+    db_name   = "slurm_accounting"
+  }
 
-#   network_storage = [{
-#       server_ip     = module.filestore-server.home-volume-ip-addresses
-#       remote_mount  = "/home"
-#       local_mount   = "/home"
-#       fs_type       = "nfs"
-#       mount_options = "defaults,hard,intr"
-#     },{
-#       server_ip     = module.filestore-server.tools-volume-ip-addresses
-#       remote_mount  = "/tools"
-#       local_mount   = "/tools"
-#       fs_type       = "nfs"
-#       mount_options = "defaults,hard,intr"
-#   }]
+  network_storage = [{
+      server_ip     = element(module.filestore-server.home-volume-ip-addresses, 0)
+      remote_mount  = "/home"
+      local_mount   = "/home"
+      fs_type       = "nfs"
+      mount_options = "defaults,hard,intr"
+    },{
+      server_ip     = element(module.filestore-server.tools-volume-ip-addresses, 0)
+      remote_mount  = "/tools"
+      local_mount   = "/tools"
+      fs_type       = "nfs"
+      mount_options = "defaults,hard,intr"
+  }]
 
-#   partitions = [
-#     { name                 = "debug"
-#       machine_type         = var.machine_type
-#       static_node_count    = 0
-#       max_node_count       = var.max_node_count
-#       zone                 = var.zone
-#       compute_disk_type    = var.compute_disk_type
-#       compute_disk_size_gb = var.compute_disk_size_gb
-#       compute_labels       = {}
-#       cpu_platform         = null
-#       gpu_count            = 0
-#       gpu_type             = null
-#       network_storage      = []
-#       preemptible_bursting = var.preemptible_bursting
-#       vpc_subnet           = var.sub_network
-#     },
-#   ]
+  partitions = [
+    { name                 = "debug"
+      machine_type         = var.machine_type
+      static_node_count    = 0
+      max_node_count       = var.max_node_count
+      zone                 = var.zone
+      compute_disk_type    = var.compute_disk_type
+      compute_disk_size_gb = var.compute_disk_size_gb
+      compute_labels       = {}
+      cpu_platform         = null
+      gpu_count            = 0
+      gpu_type             = null
+      network_storage      = []
+      preemptible_bursting = var.preemptible_bursting
+      vpc_subnet           = var.sub_network
+    },
+  ]
 
-#   depends_on = [
-#     module.cloudsql,
-#     module.filestore-server
-#   ]
-# }
+  depends_on = [
+    module.cloudsql,
+    module.filestore-server
+  ]
+}
