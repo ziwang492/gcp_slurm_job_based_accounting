@@ -18,7 +18,7 @@ variable "zone" {
 }
 
 variable "project" {
-  
+  type    = string
 }
 
 variable "network" {

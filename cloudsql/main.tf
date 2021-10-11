@@ -15,7 +15,7 @@ resource "google_sql_database_instance" "instance" {
 
         content {
           name  = ip.value
-          value = "${ip.value}/32"
+          value = "${ip.value}"
         }
       }
     }
