@@ -51,7 +51,8 @@ variable "gcp_service_list" {
     "monitoring.googleapis.com",
     "bigquery.googleapis.com",
     "sqladmin.googleapis.com",
-    "servicenetworking.googleapis.com"
+    "servicenetworking.googleapis.com",
+    "bigqueryconnection.googleapis.com",
   ]
 }
 
@@ -180,3 +181,4 @@ module "slurm-cluster" {
     module.filestore-server
   ]
 }
+

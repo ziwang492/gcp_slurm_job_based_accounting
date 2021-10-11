@@ -31,3 +31,18 @@ resource "google_sql_user" "users" {
   instance = google_sql_database_instance.instance.name
   password = "verysecure"
 }
+
+resource "google_bigquery_connection" "connection" {
+    provider      = google-beta
+    friendly_name = "👋"
+    description   = "a riveting description"
+    cloud_sql {
+        instance_id = google_sql_database_instance.instance.connection_name
+        database    = google_sql_database.database.name
+        type        = "MYSQL"
+        credential {
+          username = google_sql_user.users.name
+          password = google_sql_user.users.password
+        }
+    }
+}
