@@ -3,7 +3,7 @@
 
 Go to project_runbook/ then run terraform init / plan and apply
 
-After applying
+After applying, update ```projects/customer-sample/locations/us/connections/slurm-accounting-instance``` to your federated location
 
 ```
 SELECT
